@@ -100,52 +100,6 @@
     }
     input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
     input::placeholder { color: var(--text-dim); }
-    input[type="date"] {
-      text-align: start !important;
-      direction: ltr !important;
-      padding-left: 14px !important;
-      -webkit-padding-start: 14px !important;
-      text-indent: 0 !important;
-      -webkit-text-indent: 0 !important;
-    }
-    input[type="date"]::-webkit-datetime-edit {
-      text-align: start !important;
-      padding-left: 0 !important;
-      margin-left: 0 !important;
-    }
-    input[type="date"]::-webkit-date-and-time-value {
-      text-align: start !important;
-      margin-left: 0 !important;
-    }
-    input[type="date" i] {
-      text-align: start !important;
-      text-indent: 0 !important;
-    }
-    /* Костыль для iOS: скрываем нативный текст, показываем свой через ::before */
-    .date-wrapper {
-      position: relative;
-      display: block;
-    }
-    .date-wrapper input[type="date"] {
-      color: transparent !important;
-      -webkit-text-fill-color: transparent !important;
-    }
-    .date-wrapper input[type="date"].has-value {
-      color: var(--text) !important;
-      -webkit-text-fill-color: var(--text) !important;
-    }
-    .date-display {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-      color: var(--text-dim);
-      font-size: 1rem;
-    }
-    .date-wrapper input[type="date"].has-value + .date-display {
-      color: var(--text);
-    }
     .flex { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     .flex-center { justify-content: center; }
     .flex-between { justify-content: space-between; }
@@ -163,6 +117,15 @@
       font-size: 0.8rem;
       color: var(--text-muted);
       border: 1px solid var(--border);
+    }
+    /* ----- ИСПРАВЛЕНИЕ: группа для даты ----- */
+    .date-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .date-group input {
+      width: 100%;
     }
     /* ----- ВКЛАДКИ (табы) ----- */
     .tabs {
@@ -208,18 +171,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 16px;
+      padding: 12px 0;
       border-bottom: 1px solid var(--border);
     }
     .workout-item:last-child { border-bottom: none; }
-    .workout-item .workout-info {
-      flex: 1;
-      min-width: 0;
-      padding-right: 12px;
-    }
     .workout-date { font-size: 1.1rem; font-weight: 600; }
-    .workout-exercises { font-size: 0.9rem; color: var(--text-muted); margin-top: 2px; }
-    .workout-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .workout-exercises { font-size: 0.9rem; color: var(--text-muted); }
+    .workout-actions { display: flex; gap: 6px; }
     .empty-state {
       text-align: center;
       padding: 40px 20px;
@@ -278,7 +236,6 @@
       .btn { padding: 8px 12px; font-size: 0.85rem; }
     }
   </style>
-<base target="_blank">
 </head>
 <body>
 <div id="app">
@@ -297,12 +254,10 @@
   <section id="tab-add" class="tab-content">
     <div class="card">
       <h2>📝 Новая тренировка</h2>
-      <div class="mt-2">
+      <!-- ИСПРАВЛЕННЫЙ БЛОК ДАТЫ -->
+      <div class="mt-2 date-group">
         <label>Дата</label>
-        <div class="date-wrapper">
-          <input type="date" id="workout-date" />
-          <span class="date-display" id="date-display">Выберите дату</span>
-        </div>
+        <input type="date" id="workout-date" />
       </div>
       <div class="mt-2">
         <label>Упражнения</label>
@@ -387,7 +342,7 @@
         const exNames = w.exercises.map(e => e.name).join(', ');
         html += `
           <div class="card workout-item">
-            <div class="workout-info">
+            <div>
               <div class="workout-date">${formatDate(w.date)}</div>
               <div class="workout-exercises">${exNames || 'нет упражнений'}</div>
             </div>
@@ -418,6 +373,7 @@
           const id = btn.dataset.id;
           const workout = workouts.find(w => w.id === id);
           if (workout) {
+            // Переключиться на вкладку добавления и заполнить форму
             switchTab('tab-add');
             fillEditForm(workout);
           }
@@ -428,10 +384,12 @@
     // Заполнение формы для редактирования
     function fillEditForm(workout) {
       workoutDateInput.value = workout.date;
+      // Очищаем контейнер упражнений
       exercisesContainer.innerHTML = '';
       workout.exercises.forEach((ex, idx) => {
         addExerciseBlock(ex.name, ex.sets, idx);
       });
+      // Меняем текст кнопки сохранения
       const saveBtn = document.getElementById('save-workout-btn');
       saveBtn.dataset.editId = workout.id;
       saveBtn.textContent = '💾 Обновить тренировку';
@@ -494,9 +452,11 @@
             currentSets.splice(i, 1);
             renderSets();
           });
+          // обновление данных при изменении
           weightInput.addEventListener('input', () => { currentSets[i].weight = weightInput.value; });
           repsInput.addEventListener('input', () => { currentSets[i].reps = repsInput.value; });
         });
+        // кнопка добавить подход
         const addSetBtn = document.createElement('button');
         addSetBtn.className = 'btn btn-sm btn-outline mt-2';
         addSetBtn.textContent = '+ Подход';
@@ -512,6 +472,7 @@
       renderSets();
       block.appendChild(setsContainer);
 
+      // Удаление упражнения
       removeBtn.addEventListener('click', () => {
         if (exercisesContainer.children.length > 1) {
           block.remove();
@@ -520,6 +481,7 @@
         }
       });
 
+      // Обновление названия
       nameInput.addEventListener('input', () => {
         block._name = nameInput.value;
       });
@@ -547,6 +509,7 @@
           if (weight !== '' && reps !== '') {
             sets.push({ weight: parseFloat(weight), reps: parseInt(reps, 10) });
           }
+          // если одно из полей пустое, пропускаем подход
         });
         if (sets.length === 0) { hasError = true; return; }
         exercises.push({ name, sets });
@@ -564,6 +527,7 @@
       const editId = saveBtn.dataset.editId;
 
       if (editId) {
+        // Редактирование
         const index = workouts.findIndex(w => w.id === editId);
         if (index !== -1) {
           workouts[index] = { ...workouts[index], date: data.date, exercises: data.exercises };
@@ -573,6 +537,7 @@
           switchTab('tab-list');
         }
       } else {
+        // Новая тренировка
         const newWorkout = {
           id: generateId(),
           date: data.date,
@@ -604,10 +569,12 @@
         return;
       }
       const total = workouts.length;
+      // количество упражнений (уникальных)
       const exerciseNames = new Set();
       workouts.forEach(w => w.exercises.forEach(e => exerciseNames.add(e.name)));
       const uniqueEx = exerciseNames.size;
 
+      // максимальный вес по каждому упражнению (макс за всё время)
       const maxWeights = {};
       workouts.forEach(w => {
         w.exercises.forEach(e => {
@@ -624,6 +591,7 @@
         <div class="stat-card"><div class="stat-number">${uniqueEx}</div><div class="stat-label">Упражнений всего</div></div>
       `;
 
+      // Прогресс по упражнениям
       let progressHtml = '';
       const sortedEx = Object.keys(maxWeights).sort();
       if (sortedEx.length === 0) {
@@ -655,33 +623,20 @@
       renderStats();
     }
 
-    // Обновление отображения даты
-    function updateDateDisplay() {
-      const display = document.getElementById('date-display');
-      const val = workoutDateInput.value;
-      if (val) {
-        workoutDateInput.classList.add('has-value');
-        const d = new Date(val + 'T00:00:00');
-        display.textContent = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-      } else {
-        workoutDateInput.classList.remove('has-value');
-        display.textContent = 'Выберите дату';
-      }
-    }
-
     // Инициализация
     function init() {
       loadData();
+      // установить сегодняшнюю дату по умолчанию
       const today = new Date().toISOString().slice(0, 10);
       workoutDateInput.value = today;
-      workoutDateInput.addEventListener('input', updateDateDisplay);
-      workoutDateInput.addEventListener('change', updateDateDisplay);
 
+      // Добавить стартовый блок упражнений
       exercisesContainer.innerHTML = '';
       addExerciseBlock('', [{ weight: '', reps: '' }]);
 
       renderAll();
 
+      // Обработчики событий
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const tabId = btn.dataset.tab;
@@ -696,8 +651,10 @@
       document.getElementById('save-workout-btn').addEventListener('click', saveWorkout);
     }
 
+    // Запуск
     init();
 
+    // Регистрация Service Worker (если поддерживается)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js')
         .then(() => console.log('SW зарегистрирован'))
