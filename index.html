@@ -9,7 +9,6 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%236366f1'/%3E%3Ctext x='50' y='68' font-size='48' text-anchor='middle' fill='white' font-family='sans-serif'%3E💪%3C/text%3E%3C/svg%3E" />
   <style>
-    /* ----- СБРОС И ПЕРЕМЕННЫЕ ----- */
     * { margin:0; padding:0; box-sizing:border-box; }
     :root {
       --bg: #0d0d1a;
@@ -28,6 +27,9 @@
       --radius-sm: 10px;
       --radius-xs: 6px;
       --transition: 0.2s ease;
+      --green: #22c55e;
+      --red: #ef4444;
+      --gray: #444466;
     }
     html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
     body {
@@ -45,7 +47,6 @@
       max-width: 480px;
       width: 100%;
     }
-    /* ----- ОБЩИЕ КАРТОЧКИ ----- */
     .card {
       background: var(--bg-card);
       border-radius: var(--radius);
@@ -56,16 +57,6 @@
       transition: background var(--transition);
     }
     .card:hover { background: var(--bg-card-hover); }
-
-    /* ===== ИСПРАВЛЕНИЕ: отступы для карточек тренировок ===== */
-    .card.workout-item {
-      padding: 12px 16px;  /* явный отступ слева и справа */
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    /* ----- КНОПКИ ----- */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -97,8 +88,10 @@
     .btn-danger:hover { background: #ef4444; }
     .btn-sm { padding: 6px 14px; font-size: 0.85rem; min-height: 34px; }
     .btn-block { width: 100%; justify-content: center; }
-
-    /* ----- ПОЛЯ ВВОДА ----- */
+    .btn-success { background: var(--green); }
+    .btn-success:hover { background: #16a34a; }
+    .btn-missed { background: var(--red); }
+    .btn-missed:hover { background: #dc2626; }
     input, select {
       width: 100%;
       padding: 12px 14px;
@@ -113,8 +106,6 @@
     }
     input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
     input::placeholder { color: var(--text-dim); }
-
-    /* ----- ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ ----- */
     .flex { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     .flex-center { justify-content: center; }
     .flex-between { justify-content: space-between; }
@@ -133,8 +124,6 @@
       color: var(--text-muted);
       border: 1px solid var(--border);
     }
-
-    /* ----- ДАТА (центрирование) ----- */
     .date-group {
       display: flex;
       flex-direction: column;
@@ -156,7 +145,150 @@
       -webkit-appearance: none;
       appearance: none;
     }
-
+    /* ----- КАЛЕНДАРЬ ----- */
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .calendar-header .month-year {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+    }
+    .calendar-grid .weekday {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      padding: 4px 0;
+    }
+    .calendar-grid .day {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      border-radius: 50%;
+      background: var(--bg-input);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+    }
+    .calendar-grid .day.empty {
+      background: transparent;
+      cursor: default;
+    }
+    .calendar-grid .day:hover:not(.empty) {
+      background: var(--bg-card-hover);
+    }
+    .calendar-grid .day.success {
+      background: var(--green);
+      color: #000;
+    }
+    .calendar-grid .day.missed {
+      background: var(--red);
+      color: #fff;
+    }
+    .calendar-grid .day.has-trainings {
+      border: 2px solid var(--accent);
+    }
+    .calendar-grid .day.today {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+    .calendar-grid .day .status-badge {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      font-size: 0.6rem;
+      background: var(--bg-card);
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .filter-badge {
+      background: var(--accent-glow);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: var(--accent);
+      display: inline-block;
+    }
+    /* ----- СПИСОК ТРЕНИРОВОК ----- */
+    .card.workout-item {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .workout-date { font-size: 1.1rem; font-weight: 600; }
+    .workout-exercises { font-size: 0.9rem; color: var(--text-muted); }
+    .workout-actions { display: flex; gap: 6px; align-items: center; }
+    .workout-status {
+      font-size: 1.4rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-dim);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    /* ----- ФОРМА ДОБАВЛЕНИЯ ----- */
+    .exercise-block {
+      background: var(--bg-input);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+    }
+    .set-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .set-row input { width: 70px; flex: 1; min-width: 60px; padding: 8px 10px; }
+    .set-row .set-label { font-size: 0.85rem; color: var(--text-muted); width: 30px; }
+    .remove-set { background: none; border: none; color: var(--text-dim); font-size: 1.2rem; cursor: pointer; padding: 0 6px; }
+    .remove-set:hover { color: #ef4444; }
+    /* ----- СТАТИСТИКА ----- */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .stat-card {
+      background: var(--bg-input);
+      padding: 16px 12px;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .stat-number { font-size: 2rem; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 0.8rem; color: var(--text-muted); }
+    .exercise-progress { margin-top: 12px; }
+    .progress-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .progress-item .name { font-weight: 500; }
+    .progress-item .value { color: var(--text-muted); }
     /* ----- ВКЛАДКИ ----- */
     .tabs {
       position: fixed;
@@ -196,85 +328,28 @@
     .tab-btn:active { opacity: 0.6; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-
-    /* ----- СПИСОК ТРЕНИРОВОК (уже есть .card.workout-item) ----- */
-    .workout-date { font-size: 1.1rem; font-weight: 600; }
-    .workout-exercises { font-size: 0.9rem; color: var(--text-muted); }
-    .workout-actions { display: flex; gap: 6px; }
-
-    /* ----- ПУСТОЕ СОСТОЯНИЕ ----- */
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--text-dim);
-    }
-    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
-
-    /* ----- БЛОК УПРАЖНЕНИЯ ----- */
-    .exercise-block {
-      background: var(--bg-input);
-      border-radius: var(--radius-sm);
-      padding: 14px;
-      margin-bottom: 12px;
-      border: 1px solid var(--border);
-    }
-    .set-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-top: 8px;
-      flex-wrap: wrap;
-    }
-    .set-row input { width: 70px; flex: 1; min-width: 60px; padding: 8px 10px; }
-    .set-row .set-label { font-size: 0.85rem; color: var(--text-muted); width: 30px; }
-    .remove-set { background: none; border: none; color: var(--text-dim); font-size: 1.2rem; cursor: pointer; padding: 0 6px; }
-    .remove-set:hover { color: #ef4444; }
-
-    /* ----- СТАТИСТИКА ----- */
-    .stat-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 12px 0;
-    }
-    .stat-card {
-      background: var(--bg-input);
-      padding: 16px 12px;
-      border-radius: var(--radius-sm);
-      text-align: center;
-      border: 1px solid var(--border);
-    }
-    .stat-number { font-size: 2rem; font-weight: 700; color: var(--accent); }
-    .stat-label { font-size: 0.8rem; color: var(--text-muted); }
-    .exercise-progress { margin-top: 12px; }
-    .progress-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .progress-item .name { font-weight: 500; }
-    .progress-item .value { color: var(--text-muted); }
-
-    /* ----- АДАПТИВ ----- */
     @media (max-width: 400px) {
       .set-row input { width: 50px; flex: 0 1 50px; }
       .btn { padding: 8px 12px; font-size: 0.85rem; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
 <div id="app">
+  <!-- Вкладка: Тренировки -->
   <section id="tab-list" class="tab-content active">
     <div class="card">
       <div class="flex flex-between">
         <h2>🏋️ Мои тренировки</h2>
         <span class="tag" id="count-badge">0</span>
       </div>
+      <div id="filter-info" class="mt-2"></div>
     </div>
     <div id="workout-list"></div>
   </section>
 
+  <!-- Вкладка: Добавить -->
   <section id="tab-add" class="tab-content">
     <div class="card">
       <h2>📝 Новая тренировка</h2>
@@ -291,7 +366,17 @@
     </div>
   </section>
 
+  <!-- Вкладка: Статистика + Календарь -->
   <section id="tab-stats" class="tab-content">
+    <div class="card">
+      <h2>📅 Календарь</h2>
+      <div class="calendar-header">
+        <button class="btn btn-sm btn-outline" id="prev-month">◀</button>
+        <span class="month-year" id="month-year"></span>
+        <button class="btn btn-sm btn-outline" id="next-month">▶</button>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+    </div>
     <div class="card">
       <h2>📊 Статистика</h2>
       <div class="stat-grid" id="stats-overview"></div>
@@ -302,6 +387,7 @@
     </div>
   </section>
 
+  <!-- Нижние вкладки -->
   <nav class="tabs">
     <button class="tab-btn active" data-tab="tab-list"><span class="icon">📋</span> Тренировки</button>
     <button class="tab-btn" data-tab="tab-add"><span class="icon">➕</span> Добавить</button>
@@ -313,37 +399,87 @@
   (function() {
     'use strict';
     let workouts = [];
+    let filterDate = null; // фильтр по дате (строка YYYY-MM-DD)
+
+    // ----- ЗАГРУЗКА / СОХРАНЕНИЕ -----
     function loadData() {
-      try { const raw = localStorage.getItem('workoutAppData'); if (raw) workouts = JSON.parse(raw); else workouts = []; } catch { workouts = []; }
+      try {
+        const raw = localStorage.getItem('workoutAppData');
+        if (raw) {
+          workouts = JSON.parse(raw);
+          // Для старых тренировок добавить статус 'success'
+          workouts.forEach(w => {
+            if (!w.status) w.status = 'success';
+          });
+        } else {
+          workouts = [];
+        }
+      } catch { workouts = []; }
     }
-    function saveData() { localStorage.setItem('workoutAppData', JSON.stringify(workouts)); }
+    function saveData() {
+      localStorage.setItem('workoutAppData', JSON.stringify(workouts));
+    }
+
     function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
     function formatDate(dateStr) {
       const d = new Date(dateStr + 'T00:00:00');
       return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
     }
+    function formatDateShort(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    }
 
+    // ----- DOM-ссылки -----
     const workoutListEl = document.getElementById('workout-list');
     const countBadge = document.getElementById('count-badge');
+    const filterInfo = document.getElementById('filter-info');
     const exercisesContainer = document.getElementById('exercises-container');
     const workoutDateInput = document.getElementById('workout-date');
     const statsOverview = document.getElementById('stats-overview');
     const exerciseProgressList = document.getElementById('exercise-progress-list');
+    const calendarGrid = document.getElementById('calendar-grid');
+    const monthYear = document.getElementById('month-year');
 
+    // ----- РЕНДЕР СПИСКА ТРЕНИРОВОК (с фильтром) -----
     function renderWorkoutList() {
-      if (workouts.length === 0) {
-        workoutListEl.innerHTML = `<div class="card empty-state"><div class="icon">🏋️</div><p>Тренировок пока нет</p><p class="text-dim">Добавьте первую тренировку во вкладке «Добавить»</p></div>`;
-        countBadge.textContent = '0';
+      let filtered = [...workouts];
+      if (filterDate) {
+        filtered = filtered.filter(w => w.date === filterDate);
+      }
+      // сортировка по дате (новые сверху)
+      filtered.sort((a, b) => b.date.localeCompare(a.date));
+
+      if (filtered.length === 0) {
+        let msg = 'Тренировок пока нет';
+        if (filterDate) msg = `Нет тренировок за ${formatDate(filterDate)}`;
+        workoutListEl.innerHTML = `<div class="card empty-state"><div class="icon">🏋️</div><p>${msg}</p></div>`;
+        countBadge.textContent = workouts.length;
         return;
       }
       countBadge.textContent = workouts.length;
-      const sorted = [...workouts].sort((a, b) => b.date.localeCompare(a.date));
       let html = '';
-      sorted.forEach(w => {
+      filtered.forEach(w => {
         const exNames = w.exercises.map(e => e.name).join(', ');
-        html += `<div class="card workout-item"><div><div class="workout-date">${formatDate(w.date)}</div><div class="workout-exercises">${exNames || 'нет упражнений'}</div></div><div class="workout-actions"><button class="btn btn-sm btn-outline" data-action="edit" data-id="${w.id}">✏️</button><button class="btn btn-sm btn-danger" data-action="delete" data-id="${w.id}">🗑️</button></div></div>`;
+        const statusEmoji = w.status === 'success' ? '✅' : '❌';
+        const statusClass = w.status === 'success' ? 'btn-success' : 'btn-missed';
+        html += `
+          <div class="card workout-item">
+            <div>
+              <div class="workout-date">${formatDate(w.date)}</div>
+              <div class="workout-exercises">${exNames || 'нет упражнений'}</div>
+            </div>
+            <div class="workout-actions">
+              <span class="workout-status" data-action="toggle-status" data-id="${w.id}">${statusEmoji}</span>
+              <button class="btn btn-sm btn-outline" data-action="edit" data-id="${w.id}">✏️</button>
+              <button class="btn btn-sm btn-danger" data-action="delete" data-id="${w.id}">🗑️</button>
+            </div>
+          </div>
+        `;
       });
       workoutListEl.innerHTML = html;
+
+      // Обработчики
       workoutListEl.querySelectorAll('[data-action="delete"]').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -366,8 +502,33 @@
           }
         });
       });
+      // Переключение статуса
+      workoutListEl.querySelectorAll('[data-action="toggle-status"]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = el.dataset.id;
+          const workout = workouts.find(w => w.id === id);
+          if (workout) {
+            workout.status = workout.status === 'success' ? 'missed' : 'success';
+            saveData();
+            renderAll();
+          }
+        });
+      });
+
+      // Информация о фильтре
+      if (filterDate) {
+        filterInfo.innerHTML = `<span class="filter-badge">📅 ${formatDate(filterDate)} <button class="btn btn-sm btn-outline" id="clear-filter">✕</button></span>`;
+        document.getElementById('clear-filter')?.addEventListener('click', () => {
+          filterDate = null;
+          renderAll();
+        });
+      } else {
+        filterInfo.innerHTML = '';
+      }
     }
 
+    // ----- ФОРМА РЕДАКТИРОВАНИЯ -----
     function fillEditForm(workout) {
       workoutDateInput.value = workout.date;
       exercisesContainer.innerHTML = '';
@@ -377,6 +538,7 @@
       saveBtn.textContent = '💾 Обновить тренировку';
     }
 
+    // ----- БЛОК УПРАЖНЕНИЯ -----
     function addExerciseBlock(name = '', sets = [{ weight: '', reps: '' }], index = null) {
       const block = document.createElement('div');
       block.className = 'exercise-block';
@@ -448,6 +610,7 @@
       exercisesContainer.appendChild(block);
     }
 
+    // ----- ПОЛУЧЕНИЕ ДАННЫХ ИЗ ФОРМЫ -----
     function getFormData() {
       const date = workoutDateInput.value;
       if (!date) { alert('Выберите дату'); return null; }
@@ -463,18 +626,25 @@
         setRows.forEach(row => {
           const weight = row.querySelector('input[placeholder="Вес"]').value;
           const reps = row.querySelector('input[placeholder="Повт."]').value;
-          if (weight !== '' && reps !== '') {
-            sets.push({ weight: parseFloat(weight), reps: parseInt(reps, 10) });
+          if (reps !== '') {
+            sets.push({ weight: weight !== '' ? parseFloat(weight) : null, reps: parseInt(reps, 10) });
           }
         });
         if (sets.length === 0) { hasError = true; return; }
         exercises.push({ name, sets });
       });
-      if (hasError) { alert('Заполните все упражнения и подходы'); return null; }
-      if (exercises.length === 0) { alert('Добавьте хотя бы одно упражнение с подходами'); return null; }
+      if (hasError) {
+        alert('Заполните название упражнения и добавьте хотя бы один подход с повторениями');
+        return null;
+      }
+      if (exercises.length === 0) {
+        alert('Добавьте хотя бы одно упражнение с подходами');
+        return null;
+      }
       return { date, exercises };
     }
 
+    // ----- СОХРАНЕНИЕ (новая / редактирование) -----
     function saveWorkout() {
       const data = getFormData();
       if (!data) return;
@@ -490,7 +660,12 @@
           switchTab('tab-list');
         }
       } else {
-        const newWorkout = { id: generateId(), date: data.date, exercises: data.exercises };
+        const newWorkout = {
+          id: generateId(),
+          date: data.date,
+          exercises: data.exercises,
+          status: 'success' // по умолчанию успешная
+        };
         workouts.push(newWorkout);
         saveData();
         renderAll();
@@ -508,6 +683,7 @@
       saveBtn.textContent = '💾 Сохранить тренировку';
     }
 
+    // ----- СТАТИСТИКА -----
     function renderStats() {
       if (workouts.length === 0) {
         statsOverview.innerHTML = `<div class="stat-card"><div class="stat-number">0</div><div class="stat-label">тренировок</div></div>`;
@@ -515,24 +691,38 @@
         return;
       }
       const total = workouts.length;
+      const successCount = workouts.filter(w => w.status === 'success').length;
+      const missedCount = total - successCount;
       const exerciseNames = new Set();
       workouts.forEach(w => w.exercises.forEach(e => exerciseNames.add(e.name)));
       const uniqueEx = exerciseNames.size;
+
+      // Максимальный вес
       const maxWeights = {};
       workouts.forEach(w => {
         w.exercises.forEach(e => {
           e.sets.forEach(s => {
-            if (s.weight && s.weight > (maxWeights[e.name] || 0)) {
-              maxWeights[e.name] = s.weight;
+            if (s.weight && s.weight > 0) {
+              if (!maxWeights[e.name] || s.weight > maxWeights[e.name]) {
+                maxWeights[e.name] = s.weight;
+              }
             }
           });
         });
       });
-      statsOverview.innerHTML = `<div class="stat-card"><div class="stat-number">${total}</div><div class="stat-label">Всего тренировок</div></div><div class="stat-card"><div class="stat-number">${uniqueEx}</div><div class="stat-label">Упражнений всего</div></div>`;
+
+      statsOverview.innerHTML = `
+        <div class="stat-card"><div class="stat-number">${total}</div><div class="stat-label">Всего</div></div>
+        <div class="stat-card"><div class="stat-number">${successCount}</div><div class="stat-label">✅ Успешно</div></div>
+        <div class="stat-card"><div class="stat-number">${missedCount}</div><div class="stat-label">❌ Пропущено</div></div>
+        <div class="stat-card"><div class="stat-number">${uniqueEx}</div><div class="stat-label">Упражнений</div></div>
+      `;
+
       let progressHtml = '';
       const sortedEx = Object.keys(maxWeights).sort();
-      if (sortedEx.length === 0) progressHtml = '<p class="text-dim">Нет упражнений с весом</p>';
-      else {
+      if (sortedEx.length === 0) {
+        progressHtml = '<p class="text-dim">Нет упражнений с весом</p>';
+      } else {
         sortedEx.forEach(name => {
           progressHtml += `<div class="progress-item"><span class="name">${name}</span><span class="value">${maxWeights[name]} кг</span></div>`;
         });
@@ -540,18 +730,112 @@
       exerciseProgressList.innerHTML = progressHtml;
     }
 
+    // ----- КАЛЕНДАРЬ -----
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+
+    function renderCalendar() {
+      const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+      monthYear.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+      const firstDay = new Date(currentYear, currentMonth, 1).getDay(); // 0 - воскресенье
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const today = new Date();
+      const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+
+      // Собираем статусы по дням
+      const dayStatus = {};
+      workouts.forEach(w => {
+        if (!dayStatus[w.date]) dayStatus[w.date] = [];
+        dayStatus[w.date].push(w.status);
+      });
+
+      let html = '';
+      // Заголовки дней недели (пн, вт, ...)
+      const weekdays = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+      // Смещение для понедельника (если первый день воскресенье, то сдвигаем)
+      const offset = (firstDay === 0) ? 6 : firstDay - 1; // 0-пн ... 6-вс
+
+      // Пустые ячейки
+      for (let i = 0; i < offset; i++) {
+        html += `<div class="day empty"></div>`;
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = currentYear + '-' + String(currentMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+        const isToday = (dateStr === todayStr);
+        let classes = 'day';
+        if (isToday) classes += ' today';
+
+        const statuses = dayStatus[dateStr] || [];
+        let statusClass = '';
+        let emoji = '';
+        if (statuses.length > 0) {
+          // если есть хотя бы одна успешная, считаем день успешным
+          if (statuses.includes('success')) {
+            statusClass = 'success';
+            emoji = '✅';
+          } else {
+            statusClass = 'missed';
+            emoji = '❌';
+          }
+          classes += ' ' + statusClass;
+        }
+
+        html += `<div class="${classes}" data-date="${dateStr}">${d}${emoji ? `<span class="status-badge">${emoji}</span>` : ''}</div>`;
+      }
+
+      calendarGrid.innerHTML = html;
+
+      // Обработчики кликов по дням
+      calendarGrid.querySelectorAll('.day:not(.empty)').forEach(el => {
+        el.addEventListener('click', () => {
+          const date = el.dataset.date;
+          if (date) {
+            filterDate = date;
+            switchTab('tab-list');
+            renderAll();
+          }
+        });
+      });
+    }
+
+    function prevMonth() {
+      if (currentMonth === 0) { currentMonth = 11; currentYear--; }
+      else currentMonth--;
+      renderCalendar();
+    }
+
+    function nextMonth() {
+      if (currentMonth === 11) { currentMonth = 0; currentYear++; }
+      else currentMonth++;
+      renderCalendar();
+    }
+
+    // ----- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК -----
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+      if (tabId === 'tab-stats') {
+        renderCalendar();
+        renderStats();
+      }
     }
 
+    // ----- ПОЛНЫЙ РЕНДЕРИНГ -----
     function renderAll() {
       renderWorkoutList();
       renderStats();
+      // если вкладка статистики активна, обновим календарь
+      const statsTab = document.getElementById('tab-stats');
+      if (statsTab.classList.contains('active')) {
+        renderCalendar();
+      }
     }
 
+    // ----- ИНИЦИАЛИЗАЦИЯ -----
     function init() {
       loadData();
       const today = new Date().toISOString().slice(0, 10);
@@ -559,15 +843,35 @@
       exercisesContainer.innerHTML = '';
       addExerciseBlock('', [{ weight: '', reps: '' }]);
       renderAll();
+
+      // Обработчики вкладок
       document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => { switchTab(btn.dataset.tab); });
+        btn.addEventListener('click', () => {
+          const tabId = btn.dataset.tab;
+          switchTab(tabId);
+        });
       });
+
       document.getElementById('add-exercise-btn').addEventListener('click', () => {
         addExerciseBlock('', [{ weight: '', reps: '' }]);
       });
+
       document.getElementById('save-workout-btn').addEventListener('click', saveWorkout);
+
+      // Календарь: переключение месяцев
+      document.getElementById('prev-month').addEventListener('click', prevMonth);
+      document.getElementById('next-month').addEventListener('click', nextMonth);
+
+      // При загрузке показать статистику (по умолчанию активна вкладка list, но календарь пока не рендерится)
+      // По умолчанию активна tab-list, поэтому календарь отрисуется только при переключении.
+      // Но для первого раза, если пользователь переключится, он отрисуется.
+      // Можно также принудительно отрисовать календарь при инициализации, но он скрыт.
+      // Мы вызовем renderCalendar() при активации вкладки stats.
     }
+
     init();
+
+    // Регистрация Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js')
         .then(() => console.log('SW зарегистрирован'))
