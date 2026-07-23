@@ -45,6 +45,7 @@
       max-width: 480px;
       width: 100%;
     }
+    /* ----- ОБЩИЕ КАРТОЧКИ ----- */
     .card {
       background: var(--bg-card);
       border-radius: var(--radius);
@@ -55,6 +56,16 @@
       transition: background var(--transition);
     }
     .card:hover { background: var(--bg-card-hover); }
+
+    /* ===== ИСПРАВЛЕНИЕ: отступы для карточек тренировок ===== */
+    .card.workout-item {
+      padding: 12px 16px;  /* явный отступ слева и справа */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ----- КНОПКИ ----- */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -86,6 +97,8 @@
     .btn-danger:hover { background: #ef4444; }
     .btn-sm { padding: 6px 14px; font-size: 0.85rem; min-height: 34px; }
     .btn-block { width: 100%; justify-content: center; }
+
+    /* ----- ПОЛЯ ВВОДА ----- */
     input, select {
       width: 100%;
       padding: 12px 14px;
@@ -100,6 +113,8 @@
     }
     input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
     input::placeholder { color: var(--text-dim); }
+
+    /* ----- ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ ----- */
     .flex { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     .flex-center { justify-content: center; }
     .flex-between { justify-content: space-between; }
@@ -118,30 +133,31 @@
       color: var(--text-muted);
       border: 1px solid var(--border);
     }
-    /* ===== ИСПРАВЛЕННЫЙ БЛОК ДАТЫ ===== */
+
+    /* ----- ДАТА (центрирование) ----- */
     .date-group {
       display: flex;
       flex-direction: column;
-      align-items: center;  /* центрируем содержимое по горизонтали */
+      align-items: center;
       width: 100%;
     }
     .date-group label {
       display: block;
       width: 100%;
-      text-align: left;     /* надпись слева, как и везде */
+      text-align: left;
     }
     .date-group input {
       display: block;
-      width: 100%;          /* занимает всю ширину */
+      width: 100%;
       box-sizing: border-box;
       margin: 0;
       padding: 12px 14px;
-      text-align: center;   /* текст внутри поля по центру */
-      /* убираем лишние отступы, которые могли смещать */
+      text-align: center;
       -webkit-appearance: none;
       appearance: none;
     }
-    /* ===== ВКЛАДКИ ===== */
+
+    /* ----- ВКЛАДКИ ----- */
     .tabs {
       position: fixed;
       bottom: 0;
@@ -180,23 +196,21 @@
     .tab-btn:active { opacity: 0.6; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    .workout-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .workout-item:last-child { border-bottom: none; }
+
+    /* ----- СПИСОК ТРЕНИРОВОК (уже есть .card.workout-item) ----- */
     .workout-date { font-size: 1.1rem; font-weight: 600; }
     .workout-exercises { font-size: 0.9rem; color: var(--text-muted); }
     .workout-actions { display: flex; gap: 6px; }
+
+    /* ----- ПУСТОЕ СОСТОЯНИЕ ----- */
     .empty-state {
       text-align: center;
       padding: 40px 20px;
       color: var(--text-dim);
     }
     .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+    /* ----- БЛОК УПРАЖНЕНИЯ ----- */
     .exercise-block {
       background: var(--bg-input);
       border-radius: var(--radius-sm);
@@ -215,6 +229,8 @@
     .set-row .set-label { font-size: 0.85rem; color: var(--text-muted); width: 30px; }
     .remove-set { background: none; border: none; color: var(--text-dim); font-size: 1.2rem; cursor: pointer; padding: 0 6px; }
     .remove-set:hover { color: #ef4444; }
+
+    /* ----- СТАТИСТИКА ----- */
     .stat-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -239,6 +255,8 @@
     }
     .progress-item .name { font-weight: 500; }
     .progress-item .value { color: var(--text-muted); }
+
+    /* ----- АДАПТИВ ----- */
     @media (max-width: 400px) {
       .set-row input { width: 50px; flex: 0 1 50px; }
       .btn { padding: 8px 12px; font-size: 0.85rem; }
