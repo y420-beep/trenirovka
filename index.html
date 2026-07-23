@@ -100,6 +100,52 @@
     }
     input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
     input::placeholder { color: var(--text-dim); }
+    input[type="date"] {
+      text-align: start !important;
+      direction: ltr !important;
+      padding-left: 14px !important;
+      -webkit-padding-start: 14px !important;
+      text-indent: 0 !important;
+      -webkit-text-indent: 0 !important;
+    }
+    input[type="date"]::-webkit-datetime-edit {
+      text-align: start !important;
+      padding-left: 0 !important;
+      margin-left: 0 !important;
+    }
+    input[type="date"]::-webkit-date-and-time-value {
+      text-align: start !important;
+      margin-left: 0 !important;
+    }
+    input[type="date" i] {
+      text-align: start !important;
+      text-indent: 0 !important;
+    }
+    /* Костыль для iOS: скрываем нативный текст, показываем свой через ::before */
+    .date-wrapper {
+      position: relative;
+      display: block;
+    }
+    .date-wrapper input[type="date"] {
+      color: transparent !important;
+      -webkit-text-fill-color: transparent !important;
+    }
+    .date-wrapper input[type="date"].has-value {
+      color: var(--text) !important;
+      -webkit-text-fill-color: var(--text) !important;
+    }
+    .date-display {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-dim);
+      font-size: 1rem;
+    }
+    .date-wrapper input[type="date"].has-value + .date-display {
+      color: var(--text);
+    }
     .flex { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     .flex-center { justify-content: center; }
     .flex-between { justify-content: space-between; }
@@ -253,7 +299,10 @@
       <h2>📝 Новая тренировка</h2>
       <div class="mt-2">
         <label>Дата</label>
-        <input type="date" id="workout-date" />
+        <div class="date-wrapper">
+          <input type="date" id="workout-date" />
+          <span class="date-display" id="date-display">Выберите дату</span>
+        </div>
       </div>
       <div class="mt-2">
         <label>Упражнения</label>
@@ -606,11 +655,27 @@
       renderStats();
     }
 
+    // Обновление отображения даты
+    function updateDateDisplay() {
+      const display = document.getElementById('date-display');
+      const val = workoutDateInput.value;
+      if (val) {
+        workoutDateInput.classList.add('has-value');
+        const d = new Date(val + 'T00:00:00');
+        display.textContent = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+      } else {
+        workoutDateInput.classList.remove('has-value');
+        display.textContent = 'Выберите дату';
+      }
+    }
+
     // Инициализация
     function init() {
       loadData();
       const today = new Date().toISOString().slice(0, 10);
       workoutDateInput.value = today;
+      workoutDateInput.addEventListener('input', updateDateDisplay);
+      workoutDateInput.addEventListener('change', updateDateDisplay);
 
       exercisesContainer.innerHTML = '';
       addExerciseBlock('', [{ weight: '', reps: '' }]);
