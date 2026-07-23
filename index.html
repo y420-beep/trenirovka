@@ -162,13 +162,18 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 0;
+      padding: 14px 16px;
       border-bottom: 1px solid var(--border);
     }
     .workout-item:last-child { border-bottom: none; }
+    .workout-item .workout-info {
+      flex: 1;
+      min-width: 0;
+      padding-right: 12px;
+    }
     .workout-date { font-size: 1.1rem; font-weight: 600; }
-    .workout-exercises { font-size: 0.9rem; color: var(--text-muted); }
-    .workout-actions { display: flex; gap: 6px; }
+    .workout-exercises { font-size: 0.9rem; color: var(--text-muted); margin-top: 2px; }
+    .workout-actions { display: flex; gap: 6px; flex-shrink: 0; }
     .empty-state {
       text-align: center;
       padding: 40px 20px;
@@ -227,6 +232,7 @@
       .btn { padding: 8px 12px; font-size: 0.85rem; }
     }
   </style>
+<base target="_blank">
 </head>
 <body>
 <div id="app">
@@ -332,7 +338,7 @@
         const exNames = w.exercises.map(e => e.name).join(', ');
         html += `
           <div class="card workout-item">
-            <div>
+            <div class="workout-info">
               <div class="workout-date">${formatDate(w.date)}</div>
               <div class="workout-exercises">${exNames || 'нет упражнений'}</div>
             </div>
@@ -363,7 +369,6 @@
           const id = btn.dataset.id;
           const workout = workouts.find(w => w.id === id);
           if (workout) {
-            // Переключиться на вкладку добавления и заполнить форму
             switchTab('tab-add');
             fillEditForm(workout);
           }
@@ -374,12 +379,10 @@
     // Заполнение формы для редактирования
     function fillEditForm(workout) {
       workoutDateInput.value = workout.date;
-      // Очищаем контейнер упражнений
       exercisesContainer.innerHTML = '';
       workout.exercises.forEach((ex, idx) => {
         addExerciseBlock(ex.name, ex.sets, idx);
       });
-      // Меняем текст кнопки сохранения
       const saveBtn = document.getElementById('save-workout-btn');
       saveBtn.dataset.editId = workout.id;
       saveBtn.textContent = '💾 Обновить тренировку';
@@ -442,11 +445,9 @@
             currentSets.splice(i, 1);
             renderSets();
           });
-          // обновление данных при изменении
           weightInput.addEventListener('input', () => { currentSets[i].weight = weightInput.value; });
           repsInput.addEventListener('input', () => { currentSets[i].reps = repsInput.value; });
         });
-        // кнопка добавить подход
         const addSetBtn = document.createElement('button');
         addSetBtn.className = 'btn btn-sm btn-outline mt-2';
         addSetBtn.textContent = '+ Подход';
@@ -462,7 +463,6 @@
       renderSets();
       block.appendChild(setsContainer);
 
-      // Удаление упражнения
       removeBtn.addEventListener('click', () => {
         if (exercisesContainer.children.length > 1) {
           block.remove();
@@ -471,7 +471,6 @@
         }
       });
 
-      // Обновление названия
       nameInput.addEventListener('input', () => {
         block._name = nameInput.value;
       });
@@ -499,7 +498,6 @@
           if (weight !== '' && reps !== '') {
             sets.push({ weight: parseFloat(weight), reps: parseInt(reps, 10) });
           }
-          // если одно из полей пустое, пропускаем подход
         });
         if (sets.length === 0) { hasError = true; return; }
         exercises.push({ name, sets });
@@ -517,7 +515,6 @@
       const editId = saveBtn.dataset.editId;
 
       if (editId) {
-        // Редактирование
         const index = workouts.findIndex(w => w.id === editId);
         if (index !== -1) {
           workouts[index] = { ...workouts[index], date: data.date, exercises: data.exercises };
@@ -527,7 +524,6 @@
           switchTab('tab-list');
         }
       } else {
-        // Новая тренировка
         const newWorkout = {
           id: generateId(),
           date: data.date,
@@ -559,12 +555,10 @@
         return;
       }
       const total = workouts.length;
-      // количество упражнений (уникальных)
       const exerciseNames = new Set();
       workouts.forEach(w => w.exercises.forEach(e => exerciseNames.add(e.name)));
       const uniqueEx = exerciseNames.size;
 
-      // максимальный вес по каждому упражнению (макс за всё время)
       const maxWeights = {};
       workouts.forEach(w => {
         w.exercises.forEach(e => {
@@ -581,7 +575,6 @@
         <div class="stat-card"><div class="stat-number">${uniqueEx}</div><div class="stat-label">Упражнений всего</div></div>
       `;
 
-      // Прогресс по упражнениям
       let progressHtml = '';
       const sortedEx = Object.keys(maxWeights).sort();
       if (sortedEx.length === 0) {
@@ -616,17 +609,14 @@
     // Инициализация
     function init() {
       loadData();
-      // установить сегодняшнюю дату по умолчанию
       const today = new Date().toISOString().slice(0, 10);
       workoutDateInput.value = today;
 
-      // Добавить стартовый блок упражнений
       exercisesContainer.innerHTML = '';
       addExerciseBlock('', [{ weight: '', reps: '' }]);
 
       renderAll();
 
-      // Обработчики событий
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const tabId = btn.dataset.tab;
@@ -639,15 +629,10 @@
       });
 
       document.getElementById('save-workout-btn').addEventListener('click', saveWorkout);
-
-      // При переключении на вкладку "Добавить" сбросить редактирование, если не редактируем
-      // но лучше оставить как есть
     }
 
-    // Запуск
     init();
 
-    // Регистрация Service Worker (если поддерживается)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js')
         .then(() => console.log('SW зарегистрирован'))
